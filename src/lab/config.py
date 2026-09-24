@@ -30,6 +30,12 @@ def _parse_value(raw: str) -> Any:
     return value
 
 
+def hub_model_id(cfg: dict[str, Any], username: str) -> str:
+    """<username>/rl-lab-<experiment>-<model>, lowercase, no dots."""
+    model = cfg["model"]["name"].split("/")[-1].lower().replace(".", "-")
+    return f"{username}/rl-lab-{cfg['experiment']}-{model}"
+
+
 def flatten(cfg: dict[str, Any], prefix: str = "") -> dict[str, Any]:
     """Flatten nested config so every value can be logged as an MLflow param."""
     out: dict[str, Any] = {}

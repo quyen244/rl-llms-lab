@@ -28,5 +28,8 @@ Iterate on 0.5B-1.5B models, then run a 7B on a rented GPU with the same code.
 ## Notes
 
 - `bitsandbytes` 4-bit is Linux only, so QLoRA runs on the rented server. Local Windows is for unit tests and tiny CPU smoke tests.
-- Use `compute_dtype: float16` on GPUs without bf16 support.
+- `compute_dtype: auto` picks bf16 when the GPU supports it, else float16.
+- Copy `.env.example` to `.env` and fill in `HF_USERNAME`, `HF_TOKEN` and optionally `MLFLOW_TRACKING_URI`.
+  Pushing to the Hub is off by default; enable with `--set hub.push=true`.
+- Target hardware is one 16 GB GPU. See `docs/experiment-plan.md` for models, experiments and datasets.
 - Status: scaffold only. Nothing here has been run against a GPU yet.

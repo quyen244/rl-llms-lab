@@ -7,7 +7,7 @@ model:
   load_in_4bit: true          # QLoRA (needs bitsandbytes, Linux)
   bnb_4bit_quant_type: nf4
   bnb_4bit_use_double_quant: true
-  compute_dtype: bfloat16     # use float16 on GPUs without bf16 (e.g. T4, 1660 Ti)
+  compute_dtype: auto         # bfloat16 if the GPU supports it, else float16 (T4, V100)
 
 lora:
   r: 16
@@ -19,6 +19,9 @@ data:
   name: trl-lib/Capybara
   split: train
   max_samples: 2000           # null = full dataset
+
+hub:
+  push: false                 # true pushes the adapter to a private HF repo (needs HF_USERNAME, HF_TOKEN)
 
 train:
   output_dir: outputs/sft-qlora

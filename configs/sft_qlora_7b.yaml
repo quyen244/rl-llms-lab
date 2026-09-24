@@ -1,0 +1,42 @@
+# 7B SFT with QLoRA sized for a 16 GB GPU: batch 1, long accumulation, gradient checkpointing.
+# If you hit out-of-memory, lower train.max_length to 512 or lora.r to 8.
+method: sft
+experiment: sft-qlora
+
+model:
+  name: Qwen/Qwen2.5-7B
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  compute_dtype: auto
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: all-linear
+
+data:
+  name: HuggingFaceTB/smoltalk
+  config: everyday-conversations
+  split: train
+  max_samples: 2000
+
+hub:
+  push: false
+
+train:
+  output_dir: outputs/sft-qlora-7b
+  max_length: 1024
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 16
+  learning_rate: 1.0e-4
+  num_train_epochs: 1
+  max_steps: -1
+  warmup_ratio: 0.03
+  lr_scheduler_type: cosine
+  logging_steps: 10
+  save_steps: 200
+  gradient_checkpointing: true
+  optim: paged_adamw_8bit
+  seed: 42

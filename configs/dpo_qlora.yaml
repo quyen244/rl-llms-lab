@@ -7,7 +7,7 @@ model:
   load_in_4bit: true
   bnb_4bit_quant_type: nf4
   bnb_4bit_use_double_quant: true
-  compute_dtype: bfloat16
+  compute_dtype: auto
 
 lora:
   r: 16
@@ -19,6 +19,9 @@ data:
   name: trl-lib/ultrafeedback_binarized
   split: train
   max_samples: 2000
+
+hub:
+  push: false
 
 train:
   output_dir: outputs/dpo-qlora

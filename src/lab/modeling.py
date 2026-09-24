@@ -15,8 +15,15 @@ def build_tokenizer(name: str):
     return tok
 
 
+def resolve_dtype(name: str) -> str:
+    """'auto' picks bfloat16 when the GPU supports it, else float16 (T4, V100)."""
+    if name != "auto":
+        return name
+    return "bfloat16" if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else "float16"
+
+
 def build_model(model_cfg: dict[str, Any]):
-    dtype = getattr(torch, model_cfg.get("compute_dtype", "bfloat16"))
+    dtype = getattr(torch, resolve_dtype(model_cfg.get("compute_dtype", "auto")))
     kwargs: dict[str, Any] = {"torch_dtype": dtype}
     if model_cfg.get("load_in_4bit", False):
         kwargs["quantization_config"] = BitsAndBytesConfig(
