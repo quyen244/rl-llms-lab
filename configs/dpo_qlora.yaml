@@ -1,0 +1,37 @@
+# DPO with QLoRA. The frozen reference model is the base with the adapter disabled.
+method: dpo
+experiment: dpo-qlora
+
+model:
+  name: Qwen/Qwen2.5-0.5B-Instruct   # or an SFT-merged checkpoint
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  compute_dtype: bfloat16
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: all-linear
+
+data:
+  name: trl-lib/ultrafeedback_binarized
+  split: train
+  max_samples: 2000
+
+train:
+  output_dir: outputs/dpo-qlora
+  beta: 0.1
+  max_length: 1024
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 5.0e-6
+  num_train_epochs: 1
+  max_steps: -1
+  warmup_ratio: 0.1
+  lr_scheduler_type: cosine
+  logging_steps: 10
+  save_steps: 200
+  gradient_checkpointing: true
+  seed: 42

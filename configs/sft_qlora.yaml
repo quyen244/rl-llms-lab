@@ -1,0 +1,36 @@
+# SFT with QLoRA. Smoke-test model is tiny; swap model.name for a 7B on a rented GPU.
+method: sft
+experiment: sft-qlora
+
+model:
+  name: Qwen/Qwen2.5-0.5B-Instruct
+  load_in_4bit: true          # QLoRA (needs bitsandbytes, Linux)
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  compute_dtype: bfloat16     # use float16 on GPUs without bf16 (e.g. T4, 1660 Ti)
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: all-linear
+
+data:
+  name: trl-lib/Capybara
+  split: train
+  max_samples: 2000           # null = full dataset
+
+train:
+  output_dir: outputs/sft-qlora
+  max_length: 1024
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 2.0e-4
+  num_train_epochs: 1
+  max_steps: -1
+  warmup_ratio: 0.03
+  lr_scheduler_type: cosine
+  logging_steps: 10
+  save_steps: 200
+  gradient_checkpointing: true
+  seed: 42

@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+mlruns/
+mlflow.db
+outputs/
+checkpoints/
+data/cache/
+.env
+.cache/
+wandb/
+*.egg-info/
