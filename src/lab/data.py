@@ -26,3 +26,20 @@ def load_train_dataset(data_cfg: dict[str, Any], seed: int = 42):
         "sample_seed": seed,
     }
     return ds, info
+
+
+def to_gsm8k_solutions(ds, tok):
+    """GSM8K rows -> prompt/completion with the human-written solution, in the same format as distillation.
+
+    Prompts match eval and the teacher prompts; calculator annotations like <<48/2=24>> are removed.
+    """
+    import re
+
+    from lab.evals import PROMPT_SUFFIX
+
+    def fmt(r):
+        prompt = tok.apply_chat_template([{"role": "user", "content": r["question"] + PROMPT_SUFFIX}],
+                                         tokenize=False, add_generation_prompt=True)
+        return {"prompt": prompt, "completion": re.sub(r"<<[^>]*>>", "", r["answer"])}
+
+    return ds.map(fmt, remove_columns=ds.column_names)

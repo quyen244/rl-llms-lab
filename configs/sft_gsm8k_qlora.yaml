@@ -1,0 +1,49 @@
+# SFT on human-written GSM8K solutions. Same 1500 questions (seed 42), prompt format and
+# training settings as distill_qlora.yaml, so the only difference is who wrote the solutions.
+method: sft
+experiment: sft-gsm8k-qlora
+
+model:
+  name: Qwen/Qwen2.5-0.5B-Instruct
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  compute_dtype: auto
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: all-linear
+
+data:
+  name: openai/gsm8k
+  config: main
+  split: train
+  max_samples: 1500
+  format: gsm8k_solutions      # prompt = question + '#### n' instruction, completion = human solution
+
+hub:
+  push: false
+
+train:
+  output_dir: outputs/sft-gsm8k-qlora
+  max_length: 1024
+  per_device_train_batch_size: 16
+  gradient_accumulation_steps: 1
+  learning_rate: 2.0e-4
+  num_train_epochs: 1
+  max_steps: -1
+  warmup_steps: 0.03
+  lr_scheduler_type: cosine
+  logging_steps: 10
+  save_steps: 200
+  gradient_checkpointing: true
+  seed: 42
+
+eval:
+  gsm8k_samples: 1000
+  batch_size: 128
+
+cost:
+  gpu_hourly_usd: null

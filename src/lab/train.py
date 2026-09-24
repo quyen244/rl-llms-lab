@@ -18,7 +18,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from lab.config import flatten, hub_model_id, load_config, registry_name
-from lab.data import load_train_dataset
+from lab.data import load_train_dataset, to_gsm8k_solutions
 from lab.distill import load_distill_dataset, run_distill_kl, run_distill_seq
 from lab.grpo import load_grpo_dataset, run_grpo
 from lab.modeling import build_lora, build_model, build_tokenizer, resolve_dtype
@@ -113,6 +113,8 @@ def main() -> None:
                 ds, dataset_info = load_grpo_dataset(cfg["data"], cfg["train"].get("seed", 42))
             else:
                 ds, dataset_info = load_train_dataset(cfg["data"], cfg["train"].get("seed", 42))
+                if cfg["data"].get("format") == "gsm8k_solutions":
+                    ds = to_gsm8k_solutions(ds, tok)
             log_dataset(ds, dataset_info["name"], dataset_info["split"], "training")
             trainer = METHODS[method](cfg, model, tok, ds, build_lora(cfg["lora"]))
             if torch.cuda.is_available():
