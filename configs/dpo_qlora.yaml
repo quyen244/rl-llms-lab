@@ -18,7 +18,7 @@ lora:
 data:
   name: trl-lib/ultrafeedback_binarized
   split: train
-  max_samples: 2000
+  max_samples: 5000            # ~5k training rows
 
 hub:
   push: false
@@ -38,3 +38,9 @@ train:
   save_steps: 200
   gradient_checkpointing: true
   seed: 42
+
+eval:
+  gsm8k_samples: 1000          # first 1k GSM8K test questions
+
+cost:
+  gpu_hourly_usd: null         # rental price per GPU hour; fill in to get cost in the report

@@ -30,10 +30,14 @@ def _parse_value(raw: str) -> Any:
     return value
 
 
-def hub_model_id(cfg: dict[str, Any], username: str) -> str:
-    """<username>/rl-lab-<experiment>-<model>, lowercase, no dots."""
+def registry_name(cfg: dict[str, Any]) -> str:
+    """rl-lab-<experiment>-<model>, lowercase, no dots. Used for the MLflow registry and the Hub repo."""
     model = cfg["model"]["name"].split("/")[-1].lower().replace(".", "-")
-    return f"{username}/rl-lab-{cfg['experiment']}-{model}"
+    return f"rl-lab-{cfg['experiment']}-{model}"
+
+
+def hub_model_id(cfg: dict[str, Any], username: str) -> str:
+    return f"{username}/{registry_name(cfg)}"
 
 
 def flatten(cfg: dict[str, Any], prefix: str = "") -> dict[str, Any]:

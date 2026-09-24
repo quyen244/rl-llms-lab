@@ -10,3 +10,4 @@ data/cache/
 .cache/
 wandb/
 *.egg-info/
+reports/latest/

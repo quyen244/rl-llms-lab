@@ -18,9 +18,9 @@ lora:
 
 data:
   name: HuggingFaceTB/smoltalk
-  config: everyday-conversations
+  config: smol-magpie-ultra       # 409k rows; we sample ~5k
   split: train
-  max_samples: 2000
+  max_samples: 5000            # ~5k training rows
 
 hub:
   push: false
@@ -40,3 +40,9 @@ train:
   gradient_checkpointing: true
   optim: paged_adamw_8bit
   seed: 42
+
+eval:
+  gsm8k_samples: 1000          # first 1k GSM8K test questions
+
+cost:
+  gpu_hourly_usd: null         # rental price per GPU hour; fill in to get cost in the report

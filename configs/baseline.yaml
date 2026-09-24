@@ -1,0 +1,17 @@
+# Evaluation only (no training). Same 4-bit loading as the trained runs so comparisons are fair.
+# Run once per model:  --set model.name=Qwen/Qwen2.5-1.5B-Instruct
+method: baseline
+experiment: baseline
+
+model:
+  name: Qwen/Qwen2.5-0.5B-Instruct
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  compute_dtype: auto
+
+eval:
+  gsm8k_samples: 1000
+
+cost:
+  gpu_hourly_usd: null

@@ -16,6 +16,13 @@ Iterate on 0.5B-1.5B models, then run a 7B on a rented GPU with the same code.
     uv run python -m lab.train --config configs/sft_qlora.yaml
     uv run python -m lab.train --config configs/dpo_qlora.yaml
 
+## Tracking, governance and reports
+
+- Every run logs to MLflow (params, dataset lineage, metrics, adapter) and writes `outputs/records/<experiment>-<run_id>.json`.
+- The adapter is registered as model version alias `candidate`. `python -m lab.governance promote --model <name>` sets `champion` only if it wins by a minimum margin.
+- `python -m lab.report` builds `reports/latest/report.md` from the records: leaderboard with confidence intervals, cost versus gain chart with the Pareto front, complexity and pros and cons per method, reproducibility table.
+- New session or new machine: read `CLAUDE.md` for the current state and next steps.
+
 ## Roadmap
 
 1. SFT (QLoRA) - scaffolded
