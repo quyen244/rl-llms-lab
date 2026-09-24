@@ -6,6 +6,7 @@ mlflow.db
 outputs/*
 !outputs/records/
 !outputs/reports/
+!outputs/metrics/
 checkpoints/
 data/cache/
 .env

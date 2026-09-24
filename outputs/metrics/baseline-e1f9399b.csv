@@ -1,0 +1,6 @@
+metric,step,value,timestamp
+final.eval_seconds,0,297.3,1790271169199
+final.gsm8k_acc,0,0.311,1790271169199
+final.gsm8k_format_rate,0,0.001,1790271169199
+final.gsm8k_mean_new_tokens,0,256.335,1790271169199
+final.gsm8k_n,0,1000.0,1790271169199
