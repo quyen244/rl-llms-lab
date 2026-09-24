@@ -1,0 +1,67 @@
+# Knowledge distillation with a 4-bit teacher and a QLoRA student, on GSM8K train.
+# Two stages, same cached teacher generations, switched with --set method=...:
+#   method: distill_seq  (default here) - SFT on the teacher's generations
+#   method: distill_kl                  - SFT + token-level KL loss to the teacher's logits
+# Smoke-test sizes below (0.5B student, 1.5B teacher); swap model.name/teacher.name for real runs
+# (main experiment: 1.5B student; capstone: teacher.name=Qwen/Qwen2.5-7B-Instruct).
+method: distill_seq
+experiment: distill-qlora
+
+model:                       # student
+  name: Qwen/Qwen2.5-0.5B-Instruct
+  load_in_4bit: true          # QLoRA (needs bitsandbytes, Linux)
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  compute_dtype: auto         # bfloat16 if the GPU supports it, else float16 (T4, V100)
+
+teacher:
+  name: Qwen/Qwen2.5-1.5B-Instruct   # 7B teacher for the capstone run; always 4-bit on a 16 GB GPU
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  compute_dtype: auto
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: all-linear
+
+data:
+  name: openai/gsm8k
+  config: main
+  split: train
+  max_samples: 1500            # GSM8K train prompts sent to the teacher (per the plan: ~1.5k)
+
+distill:
+  cache_dir: outputs/distill    # teacher generations cached as outputs/distill/teacher-<name>-n<N>.jsonl
+  gen_batch_size: 8
+  max_new_tokens: 384
+  do_sample: false              # greedy teacher generation, reproducible
+  temperature: 1.0              # only used if do_sample: true
+  kl_temperature: 2.0           # distill_kl only: softens both distributions before KL
+  kl_alpha: 0.5                 # distill_kl only: loss = (1 - kl_alpha) * CE + kl_alpha * KL
+
+hub:
+  push: false                 # true pushes the student adapter to a private HF repo (needs HF_USERNAME, HF_TOKEN)
+
+train:
+  output_dir: outputs/distill-qlora
+  max_length: 1024
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 2.0e-4
+  num_train_epochs: 1
+  max_steps: -1
+  warmup_steps: 0.03
+  lr_scheduler_type: cosine
+  logging_steps: 10
+  save_steps: 200
+  gradient_checkpointing: true
+  seed: 42
+
+eval:
+  gsm8k_samples: 1000          # first 1k GSM8K test questions
+
+cost:
+  gpu_hourly_usd: null         # rental price per GPU hour; fill in to get cost in the report

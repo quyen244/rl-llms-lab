@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "run_id": "85066036",
+  "mlflow_run_id": "9ae13de183d44eb1bf8ba1ae397aa1de",
+  "created_at": "2026-09-24T17:59:55+00:00",
+  "experiment": "sft-qlora",
+  "method": "sft",
+  "git": {
+    "commit": "cd95bd96e0a07b6adba464e56dcdb72ef3c53579",
+    "dirty": true
+  },
+  "env": {
+    "python": "3.12.14",
+    "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "torch": "2.13.0",
+    "transformers": "5.17.0",
+    "trl": "1.13.0",
+    "peft": "0.21.0",
+    "datasets": "5.0.1",
+    "bitsandbytes": "0.50.2",
+    "mlflow": "3.16.1",
+    "cuda": "13.0",
+    "gpu_count": 1,
+    "gpu_name": "NVIDIA GeForce RTX 5060 Ti"
+  },
+  "model": {
+    "name": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "quantization": {
+      "load_in_4bit": true,
+      "bnb_4bit_quant_type": "nf4",
+      "bnb_4bit_use_double_quant": true
+    },
+    "lora": {
+      "r": 16,
+      "alpha": 32,
+      "dropout": 0.05,
+      "target_modules": "all-linear"
+    }
+  },
+  "dataset": {
+    "train": {
+      "name": "trl-lib/Capybara",
+      "config": null,
+      "split": "train",
+      "revision": "e235e846458bff3398a88aed812347f7f0756520",
+      "fingerprint": "ec60c4197f8b981d",
+      "rows_total": 15806,
+      "rows_used": 1500,
+      "sample_seed": 42
+    },
+    "eval": {
+      "name": "openai/gsm8k",
+      "config": "main",
+      "split": "test",
+      "revision": "740312add88f781978c0658806c59bc2815b9866",
+      "rows_used": 1000
+    }
+  },
+  "config": {
+    "method": "sft",
+    "experiment": "sft-qlora",
+    "model": {
+      "name": "Qwen/Qwen2.5-0.5B-Instruct",
+      "load_in_4bit": true,
+      "bnb_4bit_quant_type": "nf4",
+      "bnb_4bit_use_double_quant": true,
+      "compute_dtype": "auto"
+    },
+    "lora": {
+      "r": 16,
+      "alpha": 32,
+      "dropout": 0.05,
+      "target_modules": "all-linear"
+    },
+    "data": {
+      "name": "trl-lib/Capybara",
+      "split": "train",
+      "max_samples": 1500
+    },
+    "hub": {
+      "push": false
+    },
+    "train": {
+      "output_dir": "outputs/sft-qlora",
+      "max_length": 1024,
+      "per_device_train_batch_size": 2,
+      "gradient_accumulation_steps": 8,
+      "learning_rate": 0.0002,
+      "num_train_epochs": 1,
+      "max_steps": -1,
+      "warmup_steps": 0.03,
+      "lr_scheduler_type": "cosine",
+      "logging_steps": 10,
+      "save_steps": 200,
+      "gradient_checkpointing": true,
+      "seed": 42
+    },
+    "eval": {
+      "gsm8k_samples": 1000
+    },
+    "cost": {
+      "gpu_hourly_usd": null
+    }
+  },
+  "metrics": {
+    "train": {
+      "loss": 1.3785527229309082,
+      "grad_norm": 0.408203125,
+      "learning_rate": 1.48610109831262e-06,
+      "entropy": 1.6414214690526328,
+      "num_tokens": 1064572.0,
+      "mean_token_accuracy": 0.6219211012125015,
+      "train_runtime": 665.5143,
+      "train_samples_per_second": 2.254,
+      "train_steps_per_second": 0.141,
+      "total_flos": 2956093047974400.0,
+      "train_loss": 1.5116000378385503,
+      "global_step": 94
+    },
+    "eval": {
+      "gsm8k_acc": 0.259,
+      "gsm8k_n": 1000,
+      "gsm8k_format_rate": 0.003,
+      "gsm8k_mean_new_tokens": 204.553,
+      "eval_seconds": 482.1
+    }
+  },
+  "cost": {
+    "wall_seconds": 666.0,
+    "gpu_hours": 0.185,
+    "gpu_hourly_usd": null,
+    "cost_usd": null,
+    "peak_gpu_mem_gb": 1.66
+  },
+  "artifacts": {
+    "output_dir": "outputs/sft-qlora",
+    "mlflow_model_uri": "models:/rl-lab-sft-qlora-qwen2-5-0-5b-instruct/2",
+    "hub_model_id": "quyenpro/rl-lab-sft-qlora-qwen2-5-0-5b-instruct",
+    "hub_commit": "2f7e7e124e896286530976443fff8b9141126b60"
+  },
+  "status": "finished"
+}

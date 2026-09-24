@@ -3,7 +3,9 @@ __pycache__/
 *.pyc
 mlruns/
 mlflow.db
-outputs/
+outputs/*
+!outputs/records/
+!outputs/reports/
 checkpoints/
 data/cache/
 .env

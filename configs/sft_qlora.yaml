@@ -18,7 +18,7 @@ lora:
 data:
   name: trl-lib/Capybara
   split: train
-  max_samples: 5000            # ~5k training rows
+  max_samples: 1500            # 1.5k training rows (learning-scale run)
 
 hub:
   push: false                 # true pushes the adapter to a private HF repo (needs HF_USERNAME, HF_TOKEN)
@@ -31,7 +31,7 @@ train:
   learning_rate: 2.0e-4
   num_train_epochs: 1
   max_steps: -1
-  warmup_ratio: 0.03
+  warmup_steps: 0.03
   lr_scheduler_type: cosine
   logging_steps: 10
   save_steps: 200

@@ -1,0 +1,8 @@
+.git
+.venv
+outputs
+mlruns
+mlflow.db
+.env
+__pycache__
+*.pyc

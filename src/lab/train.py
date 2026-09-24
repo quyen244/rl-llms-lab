@@ -18,6 +18,8 @@ from dotenv import load_dotenv
 
 from lab.config import flatten, hub_model_id, load_config, registry_name
 from lab.data import load_train_dataset
+from lab.distill import load_distill_dataset, run_distill_kl, run_distill_seq
+from lab.grpo import load_grpo_dataset, run_grpo
 from lab.modeling import build_lora, build_model, build_tokenizer, resolve_dtype
 from lab.record import build_record, cost_info, git_info, hub_revision, write_record
 from lab.tracking import DEFAULT_TRACKING_URI, log_dataset, register_adapter
@@ -61,7 +63,7 @@ def run_dpo(cfg, model, tok, ds, lora):
     return DPOTrainer(model=model, args=args, train_dataset=ds, processing_class=tok, peft_config=lora)
 
 
-METHODS = {"sft": run_sft, "dpo": run_dpo}
+METHODS = {"sft": run_sft, "dpo": run_dpo, "distill_seq": run_distill_seq, "distill_kl": run_distill_kl, "grpo": run_grpo}
 
 
 def _train_metrics(trainer) -> dict:
@@ -104,14 +106,19 @@ def main() -> None:
         wall, peak_gb, train_metrics, dataset_info, eval_model = 0.0, None, {}, None, model
         out_dir = Path(cfg.get("train", {}).get("output_dir", "outputs/baseline"))
         if method != "baseline":
-            ds, dataset_info = load_train_dataset(cfg["data"], cfg["train"].get("seed", 42))
+            if method in ("distill_seq", "distill_kl"):
+                ds, dataset_info = load_distill_dataset(cfg)
+            elif method == "grpo":
+                ds, dataset_info = load_grpo_dataset(cfg["data"], cfg["train"].get("seed", 42))
+            else:
+                ds, dataset_info = load_train_dataset(cfg["data"], cfg["train"].get("seed", 42))
             log_dataset(ds, dataset_info["name"], dataset_info["split"], "training")
             trainer = METHODS[method](cfg, model, tok, ds, build_lora(cfg["lora"]))
             if torch.cuda.is_available():
                 torch.cuda.reset_peak_memory_stats()
             t0 = time.time()
             trainer.train(resume_from_checkpoint=True if a.resume else None)
-            wall = time.time() - t0
+            wall = time.time() - t0 + dataset_info.get("teacher_generation_seconds", 0.0)
             peak_gb = torch.cuda.max_memory_allocated() / 1e9 if torch.cuda.is_available() else None
             trainer.save_model(str(out_dir))
             if trainer.args.push_to_hub:
@@ -120,7 +127,14 @@ def main() -> None:
             eval_model = trainer.model
 
         eval_cfg = cfg.get("eval", {})
-        eval_metrics = evaluate_gsm8k(eval_model, tok, n=eval_cfg.get("gsm8k_samples", 1000)) if eval_cfg.get("gsm8k_samples", 1000) else {}
+        if method == "baseline" and torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats()
+        t_eval = time.time()
+        eval_metrics = evaluate_gsm8k(eval_model, tok, n=eval_cfg.get("gsm8k_samples", 1000), batch_size=eval_cfg.get("batch_size", 96)) if eval_cfg.get("gsm8k_samples", 1000) else {}
+        if eval_metrics:
+            eval_metrics["eval_seconds"] = round(time.time() - t_eval, 1)
+        if torch.cuda.is_available():
+            peak_gb = max(peak_gb or 0.0, torch.cuda.max_memory_allocated() / 1e9)
         mlflow.log_metrics({f"final.{k}": v for k, v in eval_metrics.items()})
         mlflow.log_metrics({f"train_summary.{k}": v for k, v in train_metrics.items() if isinstance(v, (int, float))})
 

@@ -63,6 +63,8 @@ def evaluate_gsm8k(model, tok, n: int = 1000, batch_size: int = 16, max_new_toke
             pred, fmt = extract_answer(text)
             correct += int(pred is not None and pred == gold_answer(gold))
             formatted += int(fmt)
+        done = min(i + batch_size, n)
+        print(f"[gsm8k] {done}/{n} acc={correct / done:.3f} format={formatted / done:.3f}", flush=True)
     return {
         "gsm8k_acc": correct / n,
         "gsm8k_n": n,

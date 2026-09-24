@@ -1,0 +1,55 @@
+# GRPO with QLoRA on GSM8K (experiment E3, learning scale). Rewards: exact-match correctness (1.0)
+# plus a '#### <number>' format bonus (0.1), both rule-based, defined in src/lab/grpo.py.
+# Generation uses HF model.generate (no vLLM). Sized for a shared 16 GB card.
+method: grpo
+experiment: grpo-qlora
+
+model:
+  name: Qwen/Qwen2.5-0.5B-Instruct   # Instruct: starts from a chat model, so rewards are not all zero
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  compute_dtype: auto
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: all-linear
+
+data:
+  name: openai/gsm8k
+  config: main
+  split: train
+  max_samples: 1500             # 1.5k training prompts (learning-scale run)
+
+hub:
+  push: false
+
+train:
+  output_dir: outputs/grpo-qlora
+  # Group sampling: 8 completions per prompt. Each optimizer step sees
+  # per_device_train_batch_size * gradient_accumulation_steps = 32 completions = 4 prompts,
+  # so 1500 prompts give 375 steps. All 32 completions are generated in one batch per step.
+  num_generations: 8
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 8
+  max_completion_length: 384     # same budget as eval; truncated completions score 0 (smoke at 128 clipped 100%)
+  temperature: 0.9
+  beta: 0.04                     # KL to the reference (LoRA adapter disabled, no extra model); logs kl
+  loss_type: dapo                # TRL 1.13 default, token-level normalisation without length bias
+  learning_rate: 1.0e-5
+  num_train_epochs: 1
+  max_steps: -1
+  warmup_steps: 0.03             # below 1 means a fraction of total steps (transformers 5)
+  lr_scheduler_type: cosine
+  logging_steps: 5
+  save_steps: 50
+  gradient_checkpointing: true
+  seed: 42
+
+eval:
+  gsm8k_samples: 1000
+
+cost:
+  gpu_hourly_usd: null

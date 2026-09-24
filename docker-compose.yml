@@ -1,0 +1,25 @@
+services:
+  lab:
+    build: .
+    image: rl-lab:cu128
+    working_dir: /workspace
+    shm_size: 8gb
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-sqlite:////workspace/mlflow.db}
+      - HF_HOME=/cache/hf
+    volumes:
+      - .:/workspace
+      - hf-cache:/cache/hf
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  hf-cache:
