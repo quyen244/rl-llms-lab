@@ -4,6 +4,7 @@ torch and datasets are imported lazily so the answer-extraction logic is unit-te
 """
 from __future__ import annotations
 
+import math
 import re
 from typing import Any
 
@@ -16,6 +17,8 @@ def _clean(s: str) -> str | None:
     try:
         f = float(s)
     except ValueError:
+        return None
+    if not math.isfinite(f):
         return None
     return str(int(f)) if f == int(f) else str(f)
 

@@ -31,6 +31,7 @@ def test_extract_answer_formats():
     assert extract_answer("the answer is \\boxed{42}") == ("42", False)
     assert extract_answer("about 3.50 dollars") == ("3.5", False)
     assert extract_answer("no digits here") == (None, False)
+    assert extract_answer("9" * 400) == (None, False)  # overflows float to inf
     assert gold_answer("lots of text #### 72") == "72"
 
 
