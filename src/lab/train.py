@@ -9,6 +9,7 @@ evaluates on GSM8K, and writes outputs/records/<experiment>-<run_id>.json for th
 from __future__ import annotations
 
 import argparse
+import gc
 import os
 import time
 import uuid
@@ -125,6 +126,14 @@ def main() -> None:
                 trainer.push_to_hub()
             train_metrics = _train_metrics(trainer)
             eval_model = trainer.model
+            # free optimizer state, gradients and any teacher before eval
+            eval_model.zero_grad(set_to_none=True)
+            trainer.optimizer = trainer.lr_scheduler = None
+            if hasattr(trainer, "teacher"):
+                trainer.teacher = None
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
         eval_cfg = cfg.get("eval", {})
         if method == "baseline" and torch.cuda.is_available():

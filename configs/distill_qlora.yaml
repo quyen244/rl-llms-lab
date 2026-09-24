@@ -35,7 +35,7 @@ data:
 
 distill:
   cache_dir: outputs/distill    # teacher generations cached as outputs/distill/teacher-<name>-n<N>.jsonl
-  gen_batch_size: 8
+  gen_batch_size: 128           # capped at 96-128 (owner rule)
   max_new_tokens: 384
   do_sample: false              # greedy teacher generation, reproducible
   temperature: 1.0              # only used if do_sample: true
@@ -48,8 +48,11 @@ hub:
 train:
   output_dir: outputs/distill-qlora
   max_length: 1024
-  per_device_train_batch_size: 2
-  gradient_accumulation_steps: 8
+  # effective batch 16. distill_kl holds full-vocab logits of student and teacher:
+  # batch 8 spilled past 16 GB, batch 2 peaked at 7.8 GB, so run it with
+  # --set train.per_device_train_batch_size=2 --set train.gradient_accumulation_steps=8
+  per_device_train_batch_size: 16
+  gradient_accumulation_steps: 1
   learning_rate: 2.0e-4
   num_train_epochs: 1
   max_steps: -1
@@ -57,11 +60,12 @@ train:
   lr_scheduler_type: cosine
   logging_steps: 10
   save_steps: 200
-  gradient_checkpointing: true
+  gradient_checkpointing: true   # off spilled past 16 GB at batch 16 (10 s/step); on = 1.9 GB
   seed: 42
 
 eval:
   gsm8k_samples: 1000          # first 1k GSM8K test questions
+  batch_size: 128              # eval generation batch, capped at 96-128 (owner rule)
 
 cost:
   gpu_hourly_usd: null         # rental price per GPU hour; fill in to get cost in the report

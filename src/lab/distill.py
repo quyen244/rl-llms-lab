@@ -176,6 +176,9 @@ def generate_teacher_completions(cfg: dict) -> tuple[list[dict[str, Any]], dict[
     info["n_generated"] = len(todo)
 
     del teacher
+    import gc
+
+    gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 

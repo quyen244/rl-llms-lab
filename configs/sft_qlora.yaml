@@ -26,8 +26,8 @@ hub:
 train:
   output_dir: outputs/sft-qlora
   max_length: 1024
-  per_device_train_batch_size: 2
-  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 8
+  gradient_accumulation_steps: 2
   learning_rate: 2.0e-4
   num_train_epochs: 1
   max_steps: -1
@@ -35,11 +35,12 @@ train:
   lr_scheduler_type: cosine
   logging_steps: 10
   save_steps: 200
-  gradient_checkpointing: true
+  gradient_checkpointing: true   # off spilled past 16 GB at batch 16 (10 s/step); on = 1.9 GB
   seed: 42
 
 eval:
   gsm8k_samples: 1000          # first 1k GSM8K test questions
+  batch_size: 128              # eval generation batch, capped at 96-128 (owner rule)
 
 cost:
   gpu_hourly_usd: null         # rental price per GPU hour; fill in to get cost in the report
